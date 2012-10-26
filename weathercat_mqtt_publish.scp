@@ -1,0 +1,35 @@
+tell application "WeatherCat"
+	
+	-- Change these variables as you desire
+	set loopDelay to 60 -- 20 seconds
+	set mqttServer to '127.0.0.1'
+	set mqttChannel to 'weather/merewether/'
+	
+	-- Initialise the previous values list
+	set previousValues to {} -- array/list of previous values
+	repeat NumberOfChannels times
+		set end of previousValues to ""
+	end repeat
+	
+	repeat -- run around this loop forever, once every x seconds
+		
+		repeat with theIncrementValue from 1 to NumberOfChannels
+			set WorkingChannel to theIncrementValue
+			set wcname to WorkingChannelName
+			set wcvalue to WorkingChannelValue
+			set wcstatus to WorkingChannelStatus
+			
+			-- Set the previous value from the list
+			set wcpreviousvalue to item theIncrementValue of previousValues
+			
+			-- If the WeatherCat channel is OK and the value has changed then publish
+			if wcstatus is true and wcpreviousvalue is not wcvalue then
+				do shell script "/usr/local/bin/mosquitto_pub -h " & mqttServer & " -t '" & mqttChannel & wcname & "/' -m " & wcvalue
+			end if
+			set item theIncrementValue of previousValues to wcvalue
+			
+		end repeat
+		
+		delay loopDelay
+	end repeat
+end tell
