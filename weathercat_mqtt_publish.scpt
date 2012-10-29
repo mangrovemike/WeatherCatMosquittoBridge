@@ -8,6 +8,8 @@ tell application "WeatherCat"
 	set oldCurrentConditions to ""
 	set oldDriverStatus to ""
 	
+	set quantum to 0.1 -- Used for rounding data to 1 decimal place
+	
 	
 	-- Initialise the previous values list
 	set previousValues to {} -- array/list of previous values
@@ -35,7 +37,7 @@ tell application "WeatherCat"
 		repeat with theIncrementValue from 1 to NumberOfChannels
 			set WorkingChannel to theIncrementValue
 			set wcname to WorkingChannelName
-			set wcvalue to WorkingChannelValue
+			set wcvalue to (round WorkingChannelValue / quantum) * quantum
 			set wcstatus to WorkingChannelStatus
 			
 			-- Set the previous value from the list
