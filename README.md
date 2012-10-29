@@ -12,7 +12,7 @@ WeatherCat (http://trixology.com/weathercat) .
 This simple Applescript accesses the WeatherCat Applescript interface and runs through
 each WeatherCat channel which is then published to a MQTT server.
 
-Subsequent updates to value of the WeatherCat channel are also published.
+Subsequent updates to value of the WeatherCat channel are also published. 
 
 It uses mosquitto_pub to publish the stream. By replacing the 'do shell' call to 
 mosquitto the routine can be used to feed any OS command.
@@ -29,6 +29,8 @@ something with it. Try some python, perl and especially Arduino to monitor the w
 
 Extra Info
 ----------
+
+The list of channels is in the WeatherCat User manual (trixology.com/downloads/WeatherCatUserManual.pdf).
 
 For more details about mosquitto head to http://mosquitto.org .
 Also make sure you also check out http://mqtt.org .
@@ -47,11 +49,11 @@ This will install the mosquitto server and clients.
 
 Thanks
 ------
-Special thanks for invention, ongoing support and development for mqtt and mosquitto to:
-Andy Stanford-Clark
-Roger Light
-Andy Piper
-Nicholas O'Leary
+Special thanks for invention, development, ongoing support and porting for mqtt and mosquitto to:
+* Andy Stanford-Clark
+* Roger Light
+* Andy Piper
+* Nicholas O'Leary
 
 
 
