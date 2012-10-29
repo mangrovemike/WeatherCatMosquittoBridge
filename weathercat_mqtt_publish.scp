@@ -2,8 +2,8 @@ tell application "WeatherCat"
 	
 	-- Change these variables as you desire
 	set loopDelay to 60 -- 20 seconds
-	set mqttServer to '127.0.0.1'
-	set mqttChannel to 'weather/merewether/'
+	set mqttServer to "127.0.0.1"
+	set mqttChannel to "weather/merewether/"
 	
 	-- Initialise the previous values list
 	set previousValues to {} -- array/list of previous values
