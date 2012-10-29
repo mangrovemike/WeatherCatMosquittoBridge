@@ -30,7 +30,7 @@ tell application "WeatherCat"
 		
 		set currConditions to CurrentConditions
 		if oldCurrentConditions is not currConditions then
-			do shell script "/usr/local/bin/mosquitto_pub -h " & mqttServer & " -t '" & mqttChannel & "text/current_conditions/' -m " & currConditions
+			do shell script "/usr/local/bin/mosquitto_pub -h " & mqttServer & " -t '" & mqttChannel & "text/current_conditions/' -m '" & currConditions & "'"
 		end if
 		set oldCurrentConditions to currConditions
 		
@@ -44,8 +44,14 @@ tell application "WeatherCat"
 			set wcpreviousvalue to item theIncrementValue of previousValues
 			
 			-- If the WeatherCat channel is OK and the value has changed then publish
-			if wcstatus is true and wcpreviousvalue is not wcvalue then
-				do shell script "/usr/local/bin/mosquitto_pub -h " & mqttServer & " -t '" & mqttChannel & "channel/" & wcname & "/' -m " & wcvalue
+			if wcname is not missing value and wcstatus is true and wcpreviousvalue is not wcvalue then
+				set wcnamecleaned to wcname
+				set wcnamecleaned to my replaceString(wcname, " ", "_")
+				set wcnamecleaned to my replaceString(wcnamecleaned, ".", "")
+				set wcnamecleaned to my replaceString(wcnamecleaned, "(", "")
+				set wcnamecleaned to my replaceString(wcnamecleaned, ")", "")
+				
+				do shell script "/usr/local/bin/mosquitto_pub -h " & mqttServer & " -t '" & mqttChannel & "channel/" & wcnamecleaned & "/' -m " & wcvalue
 			end if
 			set item theIncrementValue of previousValues to wcvalue
 			
@@ -54,3 +60,12 @@ tell application "WeatherCat"
 		delay loopDelay
 	end repeat
 end tell
+
+on replaceString(theText, oldString, newString)
+	set AppleScript's text item delimiters to oldString
+	set tempList to every text item of theText
+	set AppleScript's text item delimiters to newString
+	set theText to the tempList as string
+	set AppleScript's text item delimiters to ""
+	return theText
+end replaceString
