@@ -6,6 +6,7 @@ tell application "WeatherCat"
 	set mqttChannel to "weather/merewether/"
 	
 	set oldCurrentConditions to ""
+	set oldDriverStatus to ""
 	
 	
 	-- Initialise the previous values list
@@ -14,16 +15,22 @@ tell application "WeatherCat"
 		set end of previousValues to ""
 	end repeat
 	
-	
 	repeat -- run around this loop forever, once every x seconds
+		
+		-- Get the Station Driver Status (true or false)
+		set driverStatus to StationDriverStatus
+		if oldDriverStatus is not driverStatus then
+			do shell script "/usr/local/bin/mosquitto_pub -h " & mqttServer & " -t '" & mqttChannel & "text/station_driver_status/' -m " & driverStatus
+		end if
+		set oldDriverStatus to driverStatus
 		
 		-- Get the Current Conditions (text)
 		
-		set CurrentConditions to CurrentConditions
-		if oldCurrentConditions is not CurrentConditions then
-			do shell script "/usr/local/bin/mosquitto_pub -h " & mqttServer & " -t '" & mqttChannel & "text/current_conditions/' -m " & CurrentConditions
+		set currConditions to CurrentConditions
+		if oldCurrentConditions is not currConditions then
+			do shell script "/usr/local/bin/mosquitto_pub -h " & mqttServer & " -t '" & mqttChannel & "text/current_conditions/' -m " & currConditions
 		end if
-		set oldCurrentConditions to CurrentConditions
+		set oldCurrentConditions to currConditions
 		
 		repeat with theIncrementValue from 1 to NumberOfChannels
 			set WorkingChannel to theIncrementValue
