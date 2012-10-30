@@ -1,9 +1,15 @@
+property _ucChars_ : "AÄÁÀÂÃÅĂĄÆBCÇĆČDĎĐEÉÈÊËĚĘFGHIÍÌÎÏJKLĹĽŁMNÑŃŇ" & ¬
+	"OÖÓÒÔÕŐØPQRŔŘSŞŠŚTŤŢUÜÚÙÛŮŰVWXYÝZŽŹŻÞ"
+
+property _lcChars_ : "aäáàâãåăąæbcçćčdďđeéèêëěęfghiíìîïjklĺľłmnñńň" & ¬
+	"oöóòôõőøpqrŕřsşšśtťţuüúùûůűvwxyýzžźżþ"
+
 tell application "WeatherCat"
 	
 	-- Change these variables as you desire
 	set loopDelay to 60 -- 20 seconds
 	set mqttServer to "127.0.0.1"
-	set mqttTopic to "weather/merewether/"
+	set mqttChannel to "weather/merewether/"
 	
 	set oldCurrentConditions to ""
 	set oldDriverStatus to ""
@@ -22,7 +28,7 @@ tell application "WeatherCat"
 		-- Get the Station Driver Status (true or false)
 		set driverStatus to StationDriverStatus
 		if oldDriverStatus is not driverStatus then
-			do shell script "/usr/local/bin/mosquitto_pub -h " & mqttServer & " -t '" & mqttTopic & "text/station_driver_status/' -m " & driverStatus
+			do shell script "/usr/local/bin/mosquitto_pub -h " & mqttServer & " -t '" & mqttChannel & "text/station_driver_status/' -m " & driverStatus
 		end if
 		set oldDriverStatus to driverStatus
 		
@@ -30,7 +36,7 @@ tell application "WeatherCat"
 		
 		set currConditions to CurrentConditions
 		if oldCurrentConditions is not currConditions then
-			do shell script "/usr/local/bin/mosquitto_pub -h " & mqttServer & " -t '" & mqttTopic & "text/current_conditions/' -m '" & currConditions & "'"
+			do shell script "/usr/local/bin/mosquitto_pub -h " & mqttServer & " -t '" & mqttChannel & "text/current_conditions/' -m '" & currConditions & "'"
 		end if
 		set oldCurrentConditions to currConditions
 		
@@ -45,13 +51,15 @@ tell application "WeatherCat"
 			
 			-- If the WeatherCat channel is OK and the value has changed then publish
 			if wcname is not missing value and wcstatus is true and wcpreviousvalue is not wcvalue then
-				set wcnamecleaned to wcname
+				
 				set wcnamecleaned to my replaceString(wcname, " ", "_")
 				set wcnamecleaned to my replaceString(wcnamecleaned, ".", "")
 				set wcnamecleaned to my replaceString(wcnamecleaned, "(", "")
 				set wcnamecleaned to my replaceString(wcnamecleaned, ")", "")
 				
-				do shell script "/usr/local/bin/mosquitto_pub -h " & mqttServer & " -t '" & mqttTopic & "channel/" & wcnamecleaned & "/' -m " & wcvalue
+				set wcnamecleaned to my lowerString(wcnamecleaned)
+				
+				do shell script "/usr/local/bin/mosquitto_pub -h " & mqttServer & " -t '" & mqttChannel & "channel/" & wcnamecleaned & "/' -m " & wcvalue
 			end if
 			set item theIncrementValue of previousValues to wcvalue
 			
@@ -69,3 +77,31 @@ on replaceString(theText, oldString, newString)
 	set AppleScript's text item delimiters to ""
 	return theText
 end replaceString
+
+on lowerString(theText)
+	local upper, lower, theText
+	try
+		return my translateChars(theText, my _ucChars_, my _lcChars_)
+	on error eMsg number eNum
+		error "Can't lowerString: " & eMsg number eNum
+	end try
+end lowerString
+
+on translateChars(theText, fromChars, toChars)
+	local Newtext, fromChars, toChars, char, newChar, theText
+	try
+		set Newtext to ""
+		if (count fromChars) ≠ (count toChars) then
+			error "translateChars: From/To strings have different lenght"
+		end if
+		repeat with char in theText
+			set newChar to char
+			set x to offset of char in fromChars
+			if x is not 0 then set newChar to character x of toChars
+			set Newtext to Newtext & newChar
+		end repeat
+		return Newtext
+	on error eMsg number eNum
+		error "Can't translateChars: " & eMsg number eNum
+	end try
+end translateChars
