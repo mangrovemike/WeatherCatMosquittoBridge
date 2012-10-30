@@ -3,7 +3,7 @@ tell application "WeatherCat"
 	-- Change these variables as you desire
 	set loopDelay to 60 -- 20 seconds
 	set mqttServer to "127.0.0.1"
-	set mqttChannel to "weather/merewether/"
+	set mqttTopic to "weather/merewether/"
 	
 	set oldCurrentConditions to ""
 	set oldDriverStatus to ""
@@ -22,7 +22,7 @@ tell application "WeatherCat"
 		-- Get the Station Driver Status (true or false)
 		set driverStatus to StationDriverStatus
 		if oldDriverStatus is not driverStatus then
-			do shell script "/usr/local/bin/mosquitto_pub -h " & mqttServer & " -t '" & mqttChannel & "text/station_driver_status/' -m " & driverStatus
+			do shell script "/usr/local/bin/mosquitto_pub -h " & mqttServer & " -t '" & mqttTopic & "text/station_driver_status/' -m " & driverStatus
 		end if
 		set oldDriverStatus to driverStatus
 		
@@ -30,7 +30,7 @@ tell application "WeatherCat"
 		
 		set currConditions to CurrentConditions
 		if oldCurrentConditions is not currConditions then
-			do shell script "/usr/local/bin/mosquitto_pub -h " & mqttServer & " -t '" & mqttChannel & "text/current_conditions/' -m '" & currConditions & "'"
+			do shell script "/usr/local/bin/mosquitto_pub -h " & mqttServer & " -t '" & mqttTopic & "text/current_conditions/' -m '" & currConditions & "'"
 		end if
 		set oldCurrentConditions to currConditions
 		
@@ -51,7 +51,7 @@ tell application "WeatherCat"
 				set wcnamecleaned to my replaceString(wcnamecleaned, "(", "")
 				set wcnamecleaned to my replaceString(wcnamecleaned, ")", "")
 				
-				do shell script "/usr/local/bin/mosquitto_pub -h " & mqttServer & " -t '" & mqttChannel & "channel/" & wcnamecleaned & "/' -m " & wcvalue
+				do shell script "/usr/local/bin/mosquitto_pub -h " & mqttServer & " -t '" & mqttTopic & "channel/" & wcnamecleaned & "/' -m " & wcvalue
 			end if
 			set item theIncrementValue of previousValues to wcvalue
 			

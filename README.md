@@ -21,10 +21,10 @@ To run this code:
 1. Make sure you have WeatherCat up and running and talking to your weather station
 2. Open Applications --> Utilities --> AppleScript Editor
 3. Open the file weathercat_mqtt_publish.scp
-4. Alter the script for your MQTT server and channels
+4. Alter the script for your MQTT server and topic
 5. 'Run'
 
-Subscribe to the channels you are publishing to and write some funky code to do 
+Subscribe to the topics you are publishing to and write some funky code to do 
 something with it. Try some python, perl and especially Arduino to monitor the world.
 
 Extra Info
