@@ -8,7 +8,7 @@ on idle
 	tell application "WeatherCat"
 		
 		-- Change these variables as you desire
-		set loopDelay to 30 -- 30 seconds (plus idler will be called by OS after 30 sec - total 60)
+		set loopDelay to 60 -- 60 seconds 
 		set mqttServer to "127.0.0.1"
 		set mqttChannel to "weather/wirrimbi/"
 		set mqttSession to "WeatherCatData"
