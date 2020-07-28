@@ -4,31 +4,31 @@ property _ucChars_ : "AÄÁÀÂÃÅĂĄÆBCÇĆČDĎĐEÉÈÊËĚĘFGHIÍÌÎÏJ
 property _lcChars_ : "aäáàâãåăąæbcçćčdďđeéèêëěęfghiíìîïjklĺľłmnñńň" & ¬
 	"oöóòôõőøpqrŕřsşšśtťţuüúùûůűvwxyýzžźżþ"
 
-tell application "WeatherCat"
-	
-	-- Change these variables as you desire
-	set loopDelay to 60 -- 20 seconds
-	set mqttServer to "127.0.0.1"
-	set mqttChannel to "weather/merewether/"
-	
-	set oldCurrentConditions to ""
-	set oldDriverStatus to ""
-	
-	set quantum to 0.1 -- Used for rounding data to 1 decimal place
-	
-	
-	-- Initialise the previous values list
-	set previousValues to {} -- array/list of previous values
-	repeat NumberOfChannels times
-		set end of previousValues to ""
-	end repeat
-	
-	repeat -- run around this loop forever, once every x seconds
+on idle
+	tell application "WeatherCat"
+		
+		-- Change these variables as you desire
+		set loopDelay to 30 -- 30 seconds (plus idler will be called by OS after 30 sec - total 60)
+		set mqttServer to "127.0.0.1"
+		set mqttChannel to "weather/wirrimbi/"
+		set mqttSession to "WeatherCatData"
+		
+		set oldCurrentConditions to ""
+		set oldDriverStatus to ""
+		
+		set quantum to 0.1 -- Used for rounding data to 1 decimal place
+		
+		
+		-- Initialise the previous values list
+		set previousValues to {} -- array/list of previous values
+		repeat NumberOfChannels times
+			set end of previousValues to ""
+		end repeat
 		
 		-- Get the Station Driver Status (true or false)
 		set driverStatus to StationDriverStatus
 		if oldDriverStatus is not driverStatus then
-			do shell script "/usr/local/bin/mosquitto_pub -h " & mqttServer & " -t '" & mqttChannel & "text/station_driver_status/' -m " & driverStatus
+			do shell script "/usr/local/bin/mosquitto_pub -q 1 --disable-clean-session -i " & mqttSession & " -h " & mqttServer & " -t '" & mqttChannel & "text/station_driver_status/' -m " & driverStatus
 		end if
 		set oldDriverStatus to driverStatus
 		
@@ -36,7 +36,7 @@ tell application "WeatherCat"
 		
 		set currConditions to CurrentConditions
 		if oldCurrentConditions is not currConditions then
-			do shell script "/usr/local/bin/mosquitto_pub -h " & mqttServer & " -t '" & mqttChannel & "text/current_conditions/' -m '" & currConditions & "'"
+			do shell script "/usr/local/bin/mosquitto_pub -q 1 --disable-clean-session -i " & mqttSession & " -h " & mqttServer & " -t '" & mqttChannel & "text/current_conditions/' -m '" & currConditions & "'"
 		end if
 		set oldCurrentConditions to currConditions
 		
@@ -59,15 +59,14 @@ tell application "WeatherCat"
 				
 				set wcnamecleaned to my lowerString(wcnamecleaned)
 				
-				do shell script "/usr/local/bin/mosquitto_pub -h " & mqttServer & " -t '" & mqttChannel & "channel/" & wcnamecleaned & "/' -m " & wcvalue
+				do shell script "/usr/local/bin/mosquitto_pub -q 1 --disable-clean-session -i " & mqttSession & " -h " & mqttServer & " -t '" & mqttChannel & "channel/" & wcnamecleaned & "/' -m " & wcvalue
 			end if
 			set item theIncrementValue of previousValues to wcvalue
 			
 		end repeat
-		
-		delay loopDelay
-	end repeat
-end tell
+	end tell
+	return loopDelay
+end idle
 
 on replaceString(theText, oldString, newString)
 	set AppleScript's text item delimiters to oldString
@@ -105,3 +104,4 @@ on translateChars(theText, fromChars, toChars)
 		error "Can't translateChars: " & eMsg number eNum
 	end try
 end translateChars
+
